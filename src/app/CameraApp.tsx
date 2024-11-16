@@ -11,7 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Loader2, Scan } from "lucide-react";
+import { Scan } from "lucide-react";
 
 export default function ProductScanner() {
   const [detections, setDetections] = useState<
@@ -87,6 +87,7 @@ export default function ProductScanner() {
             label: data.labels[index],
             confidence: data.confidences[index],
           }));
+          console.log(data);
           setDetections(newDetections);
         }
       } catch (error) {
@@ -98,7 +99,7 @@ export default function ProductScanner() {
   }, [webcamRef]);
 
   useEffect(() => {
-    const interval = setInterval(captureImage, 100); // Scan every second
+    const interval = setInterval(captureImage, 150); // Scan every second
 
     return () => clearInterval(interval);
   }, [captureImage]);
@@ -167,29 +168,32 @@ export default function ProductScanner() {
                 <h3 className="font-semibold">{product.name}</h3>
                 <ul className="mt-2 space-y-1">
                   {product.properties.map((prop, propIndex) => (
+                    <div key ={propIndex}>
                     <li key={propIndex} className="text-sm text-gray-600">
                       {prop}
                     </li>
                     <li key={propIndex} className="text-sm text-gray-600">
                       {prop}
                     </li>
+                    </div>
                   ))}
                 </ul>
               </div>
             ))}
             {scannedProducts.length === 0 && (
+              <div>
               <p className="text-center text-gray-500">
                 No products scanned yet.
               </p>
               <p className="text-center text-gray-500">
                 No products scanned yet.
               </p>
+              </div>
             )}
           </div>
         </SheetContent>
       </Sheet>
     </div>
-  );
   );
 }
 
