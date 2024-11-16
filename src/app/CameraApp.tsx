@@ -149,7 +149,7 @@ export default function ProductScanner() {
       </main>
       <Sheet>
         <SheetTrigger asChild>
-          <Button className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+          <Button className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-30">
             <Scan className="mr-2 h-4 w-4" /> View Scanned Products
           </Button>
         </SheetTrigger>
@@ -167,29 +167,33 @@ export default function ProductScanner() {
                 <h3 className="font-semibold">{product.name}</h3>
                 <ul className="mt-2 space-y-1">
                   {product.properties.map((prop, propIndex) => (
+                    // eslint-disable-next-line react/jsx-key
+                    <div className="">
                     <li key={propIndex} className="text-sm text-gray-600">
                       {prop}
                     </li>
                     <li key={propIndex} className="text-sm text-gray-600">
                       {prop}
                     </li>
+                    </div>
                   ))}
                 </ul>
               </div>
             ))}
             {scannedProducts.length === 0 && (
+              <div> 
               <p className="text-center text-gray-500">
                 No products scanned yet.
               </p>
               <p className="text-center text-gray-500">
                 No products scanned yet.
               </p>
+              </div>
             )}
           </div>
         </SheetContent>
       </Sheet>
     </div>
-  );
   );
 }
 
