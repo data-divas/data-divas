@@ -3,13 +3,14 @@
 import React from 'react'
 import { Progress } from "@/components/ui/progress"
 import ItemCard from '../components/ItemCard';
+import Chart from "../../components/Chart";
 import { useState } from 'react';
 
 const Page = () => {
     const [totalPoints, setTotalPoints] = useState(500);
     const checkpoints = [0, 25, 50, 75, 100];
     return (
-        <div className="flex flex-col items-center justify-start min-h-screen bg-gray-100">
+        <div className="flex flex-col items-center justify-between min-h-screen bg-gray-100">
           <div className="text-7xl font-bold text-gray-800 mb-6 mt-10">
             {totalPoints}
           </div>
@@ -27,6 +28,7 @@ const Page = () => {
             discountCode='VJ78O9LK'
             totalPoints={totalPoints}
             setTotalPoints={setTotalPoints}/>
+            <Chart/>
         </div>
     );
 };
