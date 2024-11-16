@@ -28,6 +28,8 @@ export default function ProductScanner() {
   const [isScanning, setIsScanning] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [aspectRatio, setAspectRatio] = useState(0);
+  const [extractedText, setExtractedText] = useState([]);
+
 
   useEffect(() => {
     function handleResize() {
@@ -97,11 +99,55 @@ export default function ProductScanner() {
     }
   }, [webcamRef]);
 
-  useEffect(() => {
-    const interval = setInterval(captureImage, 100); // Scan every second
+  const captureText = React.useCallback(async () => {
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
 
-    return () => clearInterval(interval);
-  }, [captureImage]);
+        // Convert base64 image to file
+        const file = await fetch(imageSrc)
+          .then(res => res.blob())
+          .then(blob => new File([blob], "webcam-capture.jpg", { type: "image/jpeg" }));
+
+        // Create FormData and append file
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const response = await fetch('https://zfhct821-8000.use.devtunnels.ms/ocr/', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error('OCR request failed');
+          }
+
+          
+          const data = await response.json();
+          console.log("extracted text", data.extracted_text); 
+          setExtractedText(data.extracted_text);
+        } catch (error) {
+          console.error('Error during OCR:', error);
+        }
+      }
+    }
+  }, [webcamRef]);
+
+
+
+
+  useEffect(() => {
+  const captureInterval = setInterval(captureImage, 200); 
+  const ocrInterval = setInterval(captureText, 5000); 
+
+
+  // Cleanup function
+  return () => {
+    clearInterval(captureInterval);
+    clearInterval(ocrInterval);
+  };
+}, [captureImage, captureText]);
 
   return (
     <div className="flex flex-col h-[100vh] bg-gray-100 z-10">
@@ -167,29 +213,32 @@ export default function ProductScanner() {
                 <h3 className="font-semibold">{product.name}</h3>
                 <ul className="mt-2 space-y-1">
                   {product.properties.map((prop, propIndex) => (
+                    <div>
                     <li key={propIndex} className="text-sm text-gray-600">
                       {prop}
                     </li>
                     <li key={propIndex} className="text-sm text-gray-600">
                       {prop}
                     </li>
+                    </div>
                   ))}
                 </ul>
               </div>
             ))}
             {scannedProducts.length === 0 && (
+              <div>
               <p className="text-center text-gray-500">
                 No products scanned yet.
               </p>
               <p className="text-center text-gray-500">
                 No products scanned yet.
               </p>
+              </div>  
             )}
           </div>
         </SheetContent>
       </Sheet>
     </div>
-  );
   );
 }
 
