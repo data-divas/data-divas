@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Loader2, Scan } from "lucide-react";
+import Link from "next/link";
 
 export default function ProductScanner() {
   const [detections, setDetections] = useState<
@@ -151,7 +152,10 @@ export default function ProductScanner() {
   return (
     <div className="flex flex-col h-[100vh] bg-gray-100 z-10">
       <header className="h-[10vh] flex items-center justify-center bg-white shadow-sm">
-        <h1 className="text-2xl font-bold text-center">Product Scanner</h1>
+        <h1 className="text-2xl text-center absolute font-bold">Product Scanner</h1>
+        <Button className="ml-auto px-10 mr-10">
+          <Link href="/points">Spend Points</Link>
+        </Button>
       </header>
       <main className="flex-grow relative w-[100vw] h-[90vh] flex items-center justify-center">
         {detections.map((detection, index) => (
@@ -188,9 +192,6 @@ export default function ProductScanner() {
             maxHeight: "100%",
           }}
         />
-        {/* <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-64 h-64 border-4 border-white rounded-lg"></div>
-        </div> */}
       </main>
       <Sheet>
         <SheetTrigger asChild>
