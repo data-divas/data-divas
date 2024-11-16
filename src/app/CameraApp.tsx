@@ -1,4 +1,5 @@
 "use client";
+"use client";
 
 import React, { useRef, useState, useEffect } from "react";
 import Webcam from "react-webcam";
@@ -152,7 +153,11 @@ export default function ProductScanner() {
             <Scan className="mr-2 h-4 w-4" /> View Scanned Products
           </Button>
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-[80vh]">
+        <SheetContent
+          side="bottom"
+          className="h-[80vh]"
+          style={{ height: "80vh", overflowY: "auto" }} // Set height and enable vertical scrolling
+        >
           <SheetHeader>
             <SheetTitle>Scanned Products</SheetTitle>
           </SheetHeader>
@@ -165,11 +170,17 @@ export default function ProductScanner() {
                     <li key={propIndex} className="text-sm text-gray-600">
                       {prop}
                     </li>
+                    <li key={propIndex} className="text-sm text-gray-600">
+                      {prop}
+                    </li>
                   ))}
                 </ul>
               </div>
             ))}
             {scannedProducts.length === 0 && (
+              <p className="text-center text-gray-500">
+                No products scanned yet.
+              </p>
               <p className="text-center text-gray-500">
                 No products scanned yet.
               </p>
@@ -179,6 +190,7 @@ export default function ProductScanner() {
       </Sheet>
     </div>
   );
+  );
 }
 
 // const capture = () => {
@@ -187,3 +199,4 @@ export default function ProductScanner() {
 //     console.log("Captured Image:", imageSrc); // Base64-encoded image string
 //   }
 // };
+
