@@ -1,4 +1,5 @@
 "use client";
+"use client";
 
 import React, { useRef, useState, useEffect } from "react";
 import Webcam from "react-webcam";
@@ -12,81 +13,139 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, Scan } from "lucide-react";
 
-// Mock function for product detection
-const detectProduct = (
-  imageData: ImageData
-): Promise<{ name: string; properties: string[] } | null> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        name: "Product Name",
-        properties: ["Property 1", "Property 2", "Property 3"],
-      });
-    }, 2000);
-  });
-};
-
 export default function ProductScanner() {
+  const [detections, setDetections] = useState<
+    Array<{
+      box: { x: number; y: number; w: number; h: number };
+      label: string;
+      confidence: number;
+    }>
+  >([]);
   const webcamRef = useRef<Webcam>(null);
   const [scannedProducts, setScannedProducts] = useState<
     Array<{ name: string; properties: string[] }>
   >([]);
   const [isScanning, setIsScanning] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [aspectRatio, setAspectRatio] = useState(0);
+
+  useEffect(() => {
+    function handleResize() {
+      // Get the viewport dimensions
+      const vw = Math.max(
+        document.documentElement.clientWidth || 0,
+        window.innerWidth || 0
+      );
+      const vh = Math.max(
+        document.documentElement.clientHeight || 0,
+        window.innerHeight || 0
+      );
+
+      // Calculate aspect ratio (always use landscape orientation)
+      const ratio = Math.max(vw, vh) / Math.min(vw, vh);
+
+      setAspectRatio(ratio);
+      setDimensions({
+        width: vw,
+        height: vh,
+      });
+    }
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const videoConstraints = {
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
+    facingMode: "environment",
+    aspectRatio: { ideal: aspectRatio },
+  };
 
   const captureImage = React.useCallback(async () => {
     const imageSrc = webcamRef.current?.getScreenshot();
-    if (!imageSrc) return;
-
-    const img = new Image();
-    img.src = imageSrc;
-
-    img.onload = async () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    if (imageSrc) {
       setIsScanning(true);
-      const product = await detectProduct(imageData);
-      setIsScanning(false);
-      if (!product) return;
+      try {
+        const response = await fetch(
+          "https://zfhct821-8000.use.devtunnels.ms/detect-product",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ image: imageSrc }),
+          }
+        );
 
-      setScannedProducts((prev) => [...prev, product]);
-    };
+        const data = await response.json();
+        if (data.success && data.boxes && data.labels) {
+          // Combine boxes, labels, and confidences into detections array
+          const newDetections = data.boxes.map((box: any, index: number) => ({
+            box,
+            label: data.labels[index],
+            confidence: data.confidences[index],
+          }));
+          setDetections(newDetections);
+        }
+      } catch (error) {
+        console.error("Error detecting product:", error);
+      } finally {
+        setIsScanning(false);
+      }
+    }
   }, [webcamRef]);
 
   useEffect(() => {
-    const interval = setInterval(captureImage, 1000); // Scan every second
+    const interval = setInterval(captureImage, 100); // Scan every second
+
     return () => clearInterval(interval);
   }, [captureImage]);
 
   return (
-    <div className="flex flex-col h-[100vh] bg-gray-100">
-      <header className="p-4 bg-white shadow-sm">
+    <div className="flex flex-col h-[100vh] bg-gray-100 z-10">
+      <header className="h-[10vh] flex items-center justify-center bg-white shadow-sm">
         <h1 className="text-2xl font-bold text-center">Product Scanner</h1>
       </header>
-      <main className="flex-grow relative">
+      <main className="flex-grow relative w-[100vw] h-[90vh] flex items-center justify-center">
+      {detections.map((detection, index) => (
+            <div key={index}>
+              <div
+                className="absolute bg-red-500 text-white px-2 py-1 text-sm rounded-t-md z-30"
+                style={{
+                  left: `${detection.box.x}px`,
+                  top: `${detection.box.y - 24}px`,
+                  transform: 'translateY(-2px)',
+                }}
+              >
+                {detection.label} {(detection.confidence * 100).toFixed(0)}%
+              </div>
+              <div
+                className="absolute border-2 border-red-500 z-20"
+                style={{
+                  left: `${detection.box.x}px`,
+                  top: `${detection.box.y}px`,
+                  width: `${detection.box.w}px`,
+                  height: `${detection.box.h}px`,
+                }}
+              />
+            </div>
+          ))}
         <Webcam
           audio={false}
           ref={webcamRef}
           screenshotFormat="image/jpeg"
-          videoConstraints={{
-            facingMode: "environment",
+          videoConstraints={videoConstraints}
+          className="absolute object-cover w-full h-full"
+          style={{
+            maxWidth: "100%",
+            maxHeight: "100%",
           }}
-          className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 flex items-center justify-center">
+        {/* <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-64 h-64 border-4 border-white rounded-lg"></div>
-        </div>
-        {isScanning && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-white animate-spin" />
-          </div>
-        )}
+        </div> */}
       </main>
       <Sheet>
         <SheetTrigger asChild>
@@ -111,11 +170,17 @@ export default function ProductScanner() {
                     <li key={propIndex} className="text-sm text-gray-600">
                       {prop}
                     </li>
+                    <li key={propIndex} className="text-sm text-gray-600">
+                      {prop}
+                    </li>
                   ))}
                 </ul>
               </div>
             ))}
             {scannedProducts.length === 0 && (
+              <p className="text-center text-gray-500">
+                No products scanned yet.
+              </p>
               <p className="text-center text-gray-500">
                 No products scanned yet.
               </p>
@@ -125,6 +190,7 @@ export default function ProductScanner() {
       </Sheet>
     </div>
   );
+  );
 }
 
 // const capture = () => {
@@ -133,3 +199,4 @@ export default function ProductScanner() {
 //     console.log("Captured Image:", imageSrc); // Base64-encoded image string
 //   }
 // };
+
