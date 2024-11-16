@@ -1,6 +1,6 @@
-//import Image from "next/image";
+import Image from "next/image";
 import CameraApp from "@/app/CameraApp";
-import ItemsAttribute from "./components/itemsAttribute";
+//import ItemsAttribute from "./components/itemsAttribute";
 
 export default function Home() {
   return <CameraApp />;
