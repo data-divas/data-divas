@@ -2,18 +2,18 @@
 
 import React, { useRef, useState, useEffect } from "react"
 import Webcam from "react-webcam"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { Loader2, Scan, ShoppingCart } from 'lucide-react'
-import Link from "next/link"
+import { Scan } from 'lucide-react'
 import { CarbonFootprintModal } from '@/components/ScanResult'
 import NavBar from "@/components/NavBar"
+import { calculatePoints } from "./utils"
+import { json } from "node:stream/consumers"
+
+interface CartItem {
+  name: string;
+  carbonEmission: number;
+  points: number;
+}
 
 export default function ProductScanner() {
   const [detections, setDetections] = useState<
@@ -24,9 +24,7 @@ export default function ProductScanner() {
     }>
   >([])
   const webcamRef = useRef<Webcam>(null)
-  const [scannedProducts, setScannedProducts] = useState<
-    Array<{ name: string; properties: string[] }>
-  >([])
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isScanning, setIsScanning] = useState(false)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const [scanStep, setScanStep] = useState(0)
@@ -238,7 +236,14 @@ export default function ProductScanner() {
     }
   }, [captureImage, captureText])
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (name: string, carbonEmission: number | null) => {
+    if (carbonEmission) {
+      const points = calculatePoints(carbonEmission);
+      const newItem = { name, carbonEmission, points };
+      setCartItems((prevCartItems) => [...prevCartItems, newItem]);
+      localStorage.setItem("cart", JSON.stringify((prevCartItems) => [...prevCartItems, newItem]));
+    }
+
     // Implement add to cart functionality here
     // console.log("Product added to cart")
     setIsModalOpen(false)
@@ -343,7 +348,7 @@ export default function ProductScanner() {
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
         carbonFootprint={carbonFootprint}
-        onAddToCart={handleAddToCart}
+        onAddToCart={handleAddToCart(scanResult, carbonFootprint)}
       />
     </div>
   )

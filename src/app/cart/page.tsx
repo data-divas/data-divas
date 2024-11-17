@@ -4,15 +4,30 @@ import Link from 'next/link'
 import { Leaf } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import NavBar from '@/components/NavBar'
+import { useEffect, useState } from 'react'
 
-// This would typically come from a database or state management system
-const cartItems = [
-  { name: 'Eco-friendly T-shirt', carbonEmission: 2.5, points: 50 },
-  { name: 'Recycled Paper Notebook', carbonEmission: 1.2, points: 30 },
-  { name: 'Bamboo Toothbrush', carbonEmission: 0.8, points: 20 },
-]
+
+interface CartItem {
+  name: string;
+  carbonEmission: number;
+  points: number;
+}
+
 
 export default function ShoppingCartPage() {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  useEffect(() => {
+    const cart = localStorage.getItem("cart");
+    if (cart) {
+      setCartItems(JSON.parse(cart));
+    } 
+  }, [])
+
+  const handleRemoveAllFromCart = () => {
+    setCartItems([])
+    localStorage.clear()
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <NavBar />
@@ -36,7 +51,7 @@ export default function ShoppingCartPage() {
             </ul>
           </div>
           <div className="bg-gray-50 px-6 py-4 flex justify-between items-center">
-            <Button asChild>
+            <Button asChild onClick={handleRemoveAllFromCart}>
               <Link href="/scan-receipts">Confirm Purchase</Link>
             </Button>
             <Button variant="outline" asChild>
