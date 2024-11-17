@@ -2,14 +2,16 @@
 
 import React from 'react'
 import { Progress } from "@/components/ui/progress"
-import ItemCard from '../../components/ItemCard';
-import Chart from "../../components/Chart";
+import ItemCard from '@/components/ItemCard';
 import { useState } from 'react';
+import NavBar from '@/components/NavBar';
 
 const Page = () => {
     const [totalPoints, setTotalPoints] = useState(260);
     const checkpoints = [0, 5, 10, 15, 20];
     return (
+      <div>
+        <NavBar/>
         <div className="flex flex-col items-center justify-between min-h-screen bg-gray-100">
           <p className="text-4xl font-bold mt-5">
             Points so far
@@ -40,7 +42,7 @@ const Page = () => {
             discountCode='KJE23LS'
             totalPoints={totalPoints}
             setTotalPoints={setTotalPoints}/>
-            <Chart/>
+        </div>
         </div>
     );
 };

@@ -12,7 +12,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Loader2, Scan, ShoppingCart } from 'lucide-react'
 import Link from "next/link"
-import { CarbonFootprintModal } from './components/ScanResult'
+import { CarbonFootprintModal } from '@/components/ScanResult'
+import NavBar from "@/components/NavBar"
 
 export default function ProductScanner() {
   const [detections, setDetections] = useState<
@@ -207,12 +208,7 @@ export default function ProductScanner() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      <header className="h-16 flex items-center justify-between px-4 bg-white shadow-sm">
-        <h1 className="text-xl md:text-2xl font-bold">Product Scanner</h1>
-        <Button size="sm" className="px-2 md:px-4">
-          <Link href="/points">Spend Points</Link>
-        </Button>
-      </header>
+      <NavBar/>
       <main className="flex-grow relative flex items-center justify-center overflow-hidden">
         {detections.map((detection, index) => (
           <div key={index}>
@@ -278,41 +274,7 @@ export default function ProductScanner() {
         >
           <Scan className="mr-2 h-4 w-4" /> Scan Product
         </Button>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button size="sm" className="flex-grow max-w-[200px]">
-              <Scan className="mr-2 h-4 w-4" /> View Scanned
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="bottom"
-            className="h-[80vh]"
-            style={{ height: "80vh", overflowY: "auto" }}
-          >
-            <SheetHeader>
-              <SheetTitle>Scanned Products</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4 space-y-4">
-              {scannedProducts.map((product, index) => (
-                <div key={index} className="bg-gray-100 p-4 rounded-lg">
-                  <h3 className="font-semibold">{product.name}</h3>
-                  <ul className="mt-2 space-y-1">
-                    {product.properties.map((prop, propIndex) => (
-                      <li key={propIndex} className="text-sm text-gray-600">
-                        {prop}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-              {scannedProducts.length === 0 && (
-                <p className="text-center text-gray-500">
-                  No products scanned yet.
-                </p>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+        
       </div>
       <CarbonFootprintModal
         isOpen={isModalOpen}

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Leaf } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import NavBar from '../../components/NavBar'
+import NavBar from '@/components/NavBar'
 
 // This would typically come from a database or state management system
 const cartItems = [
