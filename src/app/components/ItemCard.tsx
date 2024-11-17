@@ -3,7 +3,8 @@ import React from 'react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Copy } from 'lucide-react';
+import { Copy, Terminal } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface ItemCardProps {
   imageUrl: string;
@@ -11,14 +12,15 @@ interface ItemCardProps {
   itemName: string;
   description: string;
   discountCode: string;
-  totalPoints: number;  // State passed from the parent
+  totalPoints: number; 
   setTotalPoints: React.Dispatch<React.SetStateAction<number>>;
 }
   
-  const ItemCard: React.FC<ItemCardProps> = ({ imageUrl, points, itemName, description, discountCode, setTotalPoints }) => {
+  const ItemCard: React.FC<ItemCardProps> = ({ imageUrl, points, itemName, description, discountCode, totalPoints, setTotalPoints }) => {
   const [flipped, setFlipped] = useState(false);
   const [modalOpen, setModalOpen] = useState(false); 
   const [discountRevealed, setDiscountRevealed] = useState(false);
+  const [showAlert, setShowAlert] = useState<boolean>(false); // Alert state
 
   const handleClick = () => {
     setFlipped(!flipped);
@@ -37,30 +39,39 @@ interface ItemCardProps {
   };
 
   const subtractPoints = () => {
-    setTotalPoints(totalPoints => totalPoints - points);  // Use the previous state value
+    setTotalPoints(totalPoints => totalPoints - points);
+  };
+
+  const handleButtonClick = () => {
+    if (totalPoints >= points) {
+      revealDiscount();
+      subtractPoints();
+    } else {
+      setShowAlert(true);
+      setTimeout(() => {
+        setShowAlert(false); 
+      }, 3000); 
+    }
   };
 
   return (
   <div className="w-full">
-    <div
-      className={`hover:shadow-xl cursor-pointer h-[200px] w-2/3 mx-auto bg-white p-6 rounded-lg shadow-lg flex items-center mb-10 space-x-6 ${flipped ? 'hidden' : ''}`}
-      onClick={handleClick}
-    >
-      <div className="flex-shrink-0 w-1/3 h-full">
-        <Image
-          src={imageUrl}
-          alt={itemName}
-          className="object-cover rounded-md w-full h-full"
-          width={200}
-          height={100}
-        />
-      </div>
-      <div className="flex flex-col justify-center w-2/3 h-full">
-        <h2 className="text-xl font-semibold text-gray-800">{itemName}</h2>
-        <p className="text-lg text-gray-600">Redeem for {points} points</p>
-      </div>
-    </div>
-
+    <div className={`hover:shadow-xl cursor-pointer h-[200px] w-2/3 mx-auto bg-white p-6 rounded-lg shadow-lg flex items-center mb-10 space-x-6 ${flipped ? 'hidden' : ''} ${discountRevealed ? 'bg-green-100' : ''}`}
+        onClick={handleClick}>
+        <div className="flex-shrink-0 w-1/5 h-full relative">
+            <Image
+            src={imageUrl}
+            alt={itemName}
+            className="rounded-lg w-full h-full"
+            width={100}   
+            height={200}  
+            />
+        </div>
+        <div className="flex flex-col justify-center w-2/3 h-full">
+            <h2 className="text-xl font-semibold text-gray-800">{itemName}</h2>
+            <p className="text-lg text-gray-600">Redeem for {points} points</p>
+        </div>
+        </div>
     <div
       className={`hover:shadow-xl h-[200px] w-2/3 mx-auto bg-white p-6 mb-10 rounded-lg shadow-lg flex items-center space-x-6 ${flipped ? '' : 'hidden'}`}
       onClick={handleClick}
@@ -88,11 +99,11 @@ interface ItemCardProps {
             <div className="flex flex-col items-center justify-center">
                 {!discountRevealed ? (
                 <div className="mt-6 flex justify-center">
-                    <Button onClick={() => { revealDiscount(); subtractPoints(); }}>Reveal</Button>
+                    <Button onClick={handleButtonClick}>Reveal</Button>
                 </div>
                 ) : (
                 <div className="flex flex-row items-center">
-                    <p className="text-3xl font-bold text-green-600 mr-4">{discountCode}</p>
+                    <p className="text-3xl font-bold text-green-400 mr-4">{discountCode}</p>
                     <Button
                     onClick={() => { navigator.clipboard.writeText(discountCode); }}
                     className="text-white  px-4 py-2 rounded-lg"
@@ -102,6 +113,15 @@ interface ItemCardProps {
                 </div>
                 )}
             </div>
+            {showAlert && (
+                <Alert className='mt-5'>
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Heads up!</AlertTitle>
+                <AlertDescription>
+                    You do not have enough points to redeem this item.
+                </AlertDescription>
+                </Alert>
+            )}
             </div>
         </div>
     )}
