@@ -67,6 +67,35 @@ export default function ProductScanner() {
     aspectRatio: { ideal: aspectRatio },
   }
 
+  const getCarbonFootPrint = async (product: string) => {
+    try {
+      console.log("Getting carbon footprint for:", product)
+      const response = await fetch(
+        "http://localhost:8000/footprint-info/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: product }),
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      
+      const data = await response.json()
+      console.log("carbon response", data)
+      setCarbonFootprint(data.emissionFactor)
+      return data
+    } catch (error) {
+      console.error("Error fetching carbon footprint:", error)
+      setCarbonFootprint(null)
+    }
+  }
+
   const simulateScan = async () => {
     setIsScanning(true)
     setScanStep(0)
@@ -87,13 +116,16 @@ export default function ProductScanner() {
           const paragraph = extractedText
             .map((item) => item.text)
             .join("\n");
-
-          const product = await getProductAndWeight(paragraph);
-          setExtractedProductString(product);
           
-          console.log("Product:", product);
+          const product = await getProductAndWeight(paragraph);
+          console.log("Now getting carbon footprint for:", product.message.content);
+          await getCarbonFootPrint(product.message.content);
+          
+          
+          // console.log("Product:", product);
           setIsModalOpen(true)
         } catch (error) {
+          
           console.error('Error fetching carbon footprint:', error)
           setScanResult('Error fetching carbon footprint. Please try again.')
         }
@@ -101,6 +133,8 @@ export default function ProductScanner() {
       }
     }
   }
+
+
 
   const captureImage = React.useCallback(async () => {
     const imageSrc = webcamRef.current?.getScreenshot()
@@ -118,7 +152,7 @@ export default function ProductScanner() {
         )
 
         const data = await response.json();
-        console.log("Detected products:", data);
+        // console.log("Detected products:", data);
         if (data.success && data.boxes && data.labels) {
           const newDetections = data.boxes.map((box: any, index: number) => ({
             box,
@@ -161,7 +195,6 @@ export default function ProductScanner() {
           }
 
           const data = await response.json();
-          console.log("extracted text", data.extracted_text);
 
           const mappedResults = data.extracted_text.map((ocrResult) => {
             const ocrBox = ocrResult.bounding_box.flat()
@@ -179,7 +212,7 @@ export default function ProductScanner() {
                 : null,
             }
           })
-          console.log("mappedresult", mappedResults)
+          // console.log("mappedresult", mappedResults)
 
           setExtractedText(mappedResults)
         } catch (error) {
@@ -196,8 +229,8 @@ export default function ProductScanner() {
   }
 
   useEffect(() => {
-    const captureInterval = setInterval(captureImage, 500);
-    const ocrInterval = setInterval(captureText, 500);
+    const captureInterval = setInterval(captureImage, 1000);
+    const ocrInterval = setInterval(captureText, 1000);
 
     return () => {
       clearInterval(captureInterval)
@@ -207,7 +240,7 @@ export default function ProductScanner() {
 
   const handleAddToCart = () => {
     // Implement add to cart functionality here
-    console.log("Product added to cart")
+    // console.log("Product added to cart")
     setIsModalOpen(false)
     // You might want to add the scanned product to the scannedProducts array here
   }

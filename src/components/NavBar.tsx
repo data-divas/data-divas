@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 export default function NavBar() {
   return (
     <header className="h-16 flex items-center justify-between px-4 bg-white shadow-sm">
-      <h1 className="text-xl md:text-2xl font-bold">Product Scanner</h1>
+      <a className="text-xl md:text-2xl font-bold" href="/">Product Scanner</a>
       <div className="flex items-center space-x-4">
         <Button size="sm" className="px-2 md:px-4">
           <Link href="/points">Spend Points</Link>
