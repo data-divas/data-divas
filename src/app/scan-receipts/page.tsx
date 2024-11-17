@@ -1,71 +1,68 @@
-"use client";
+'use client'
 
-import { useRef, useState } from "react";
-import Webcam from "react-webcam";
+import React, { useState, useRef, useCallback } from 'react'
+import Webcam from 'react-webcam'
+import { Camera } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import LoadingAnimation from "../components/LoadingAnimation"
 
-export default function ScanReceiptsPage() {
-  const webcamRef = useRef<Webcam>(null);
-  const [isProductsOverlayVisible, setProductsOverlayVisible] = useState(false);
+export default function ReceiptScanner() {
+  const [isCapturing, setIsCapturing] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const webcamRef = useRef<Webcam>(null)
 
-  const onShowProductsButtonClick = () => {
-    setProductsOverlayVisible(true);
-  };
+  const capture = useCallback(() => {
+    setIsCapturing(true)
+    setTimeout(() => {
+      setIsCapturing(false)
+      setIsLoading(true)
+      // Simulate processing time
+      setTimeout(() => {
+        setIsLoading(false)
+      }, 3000)
+    }, 500)
+  }, [])
 
-  const onHideProductsButtonClick = () => {
-    setProductsOverlayVisible(false);
-  };
+  if (isLoading) {
+    return <LoadingAnimation />
+  }
 
   return (
-    <div style={flexCenterStyle}>
-      <Webcam
-        audio={false}
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-        width={640}
-        height={480}
-      />
-      {!isProductsOverlayVisible && (
-        <button onClick={onShowProductsButtonClick}>Show Products</button>
-      )}
-
-      {isProductsOverlayVisible && ProductsOverlay(onHideProductsButtonClick)}
-    </div>
-  );
-}
-
-const flexCenterStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: 'column', // Arranges items vertically
-  justifyContent: "center",
-  alignItems: "center",
-  height: "100vh",
-}
-
-const productsOverlayStyle: React.CSSProperties = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  zIndex: 9999, // Makes sure the overlay is on top of everything
-};
-
-function ProductsOverlay(onHideProductsButtonClick: any) {
-  return (
-    <div style={productsOverlayStyle}>
-      <div>
-        <button onClick={onHideProductsButtonClick}>X</button>
-        <h2>Product List</h2>
-        <ul>
-          <li>Product 1</li>
-          <li>Product 2</li>
-          <li>Product 3</li>
-        </ul>
+    <div className="fixed inset-0 bg-black">
+      <div className="relative h-full w-full">
+        <Webcam
+          audio={false}
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+          videoConstraints={{
+            facingMode: 'environment'
+          }}
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-[-35px] border-[40px] border-white pointer-events-none" style={{
+            borderRadius: '80px',
+            boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.75)'
+          }}></div>
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-32 h-32 border-2 border-white rounded-lg flex items-center justify-center">
+            <div className="w-1 h-1 bg-white rounded-full"></div>
+          </div>
+        </div>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 rounded-full w-16 h-16"
+          onClick={capture}
+        >
+          <Camera className="h-8 w-8" />
+          <span className="sr-only">Capture receipt</span>
+        </Button>
       </div>
+      {isCapturing && (
+        <div className="fixed inset-0 bg-white animate-flash"></div>
+      )}
     </div>
-  );
+  )
 }
