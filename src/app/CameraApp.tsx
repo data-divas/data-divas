@@ -157,6 +157,12 @@ export default function ProductScanner() {
           const data = await response.json();
           console.log("extracted text", data.extracted_text);
 
+          const paragraph = data.extracted_text
+            .map((item) => item.text)
+            .join("\n");
+          const product = getProductAndWeight(paragraph);
+          console.log("Product:", product);
+
           const mappedResults = data.extracted_text.map((ocrResult) => {
             const ocrBox = ocrResult.bounding_box.flat()
             const matchingDetection = detections.find((detection) =>
@@ -206,14 +212,33 @@ export default function ProductScanner() {
     // You might want to add the scanned product to the scannedProducts array here
   }
 
+  const getProductAndWeight = async (product: string) => {
+    try {
+      const response = await fetch(
+        "https://zfhct821-8000.use.devtunnels.ms/parse-product-data",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ data: product }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Product details:", data.message.content);
+      return data;
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      throw error;
+    }
+  };
+
   return (
     <div className="flex flex-col h-[100vh] bg-gray-100 z-10">
-      <header className="h-[10vh] flex items-center justify-center bg-white shadow-sm">
-        <h1 className="text-2xl text-center absolute font-bold">Product Scanner</h1>
-        <Button className="ml-auto px-10 mr-10">
-          <Link href="/points">Spend Points</Link>
-        </Button>
-      </header>
+        <NavBar/>
       <main className="flex-grow relative w-[100vw] h-[90vh] flex items-center justify-center">
         {detections.map((detection, index) => (
           <div key={index}>
