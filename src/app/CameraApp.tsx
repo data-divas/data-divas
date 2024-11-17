@@ -82,7 +82,7 @@ export default function ProductScanner() {
         );
 
         const data = await response.json();
-        console.log("Detected products:", data);
+        // console.log("Detected products:", data);
         if (data.success && data.boxes && data.labels) {
           // Combine boxes, labels, and confidences into detections array
           const newDetections = data.boxes.map((box: any, index: number) => ({
@@ -99,6 +99,32 @@ export default function ProductScanner() {
       }
     }
   }, [webcamRef]);
+
+  const getProductAndWeight = async (product: string) => {
+    try {
+      const response = await fetch(
+        "https://zfhct821-8000.use.devtunnels.ms/parse-product-data",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ data: product }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Product details:", data.message.content);
+      return data;
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      throw error;
+    }
+  };
 
   const captureText = React.useCallback(async () => {
     if (webcamRef.current) {
@@ -131,6 +157,13 @@ export default function ProductScanner() {
 
           const data = await response.json();
           console.log("extracted text", data.extracted_text);
+          const paragraph = data.extracted_text
+            .map((item) => item.text)
+            .join("\n");
+
+          const product = getProductAndWeight(paragraph);
+
+          console.log("Product:", product);
 
           // Map OCR boxes to OpenCV boxes
           const mappedResults = data.extracted_text.map((ocrResult) => {
@@ -167,8 +200,8 @@ export default function ProductScanner() {
   };
 
   useEffect(() => {
-    const captureInterval = setInterval(captureImage, 500);
-    const ocrInterval = setInterval(captureText, 500);
+    const captureInterval = setInterval(captureImage, 2000);
+    const ocrInterval = setInterval(captureText, 2000);
 
     // Cleanup function
     return () => {
@@ -180,7 +213,9 @@ export default function ProductScanner() {
   return (
     <div className="flex flex-col h-[100vh] bg-gray-100 z-10">
       <header className="h-[10vh] flex items-center justify-center bg-white shadow-sm">
-        <h1 className="text-2xl text-center absolute font-bold">Product Scanner</h1>
+        <h1 className="text-2xl text-center absolute font-bold">
+          Product Scanner
+        </h1>
         <Button className="ml-auto px-10 mr-10">
           <Link href="/points">Spend Points</Link>
         </Button>
