@@ -81,6 +81,7 @@ export default function ProductScanner() {
         );
 
         const data = await response.json();
+        console.log("Detected products:", data);
         if (data.success && data.boxes && data.labels) {
           // Combine boxes, labels, and confidences into detections array
           const newDetections = data.boxes.map((box: any, index: number) => ({
@@ -116,7 +117,7 @@ export default function ProductScanner() {
 
         try {
           const response = await fetch(
-            "https://zfhct821-8000.use.devtunnels.ms/ocr/",
+            "https://zrcctnww-8000.use.devtunnels.ms/ocr/",
             {
               method: "POST",
               body: formData,
@@ -129,17 +130,44 @@ export default function ProductScanner() {
 
           const data = await response.json();
           console.log("extracted text", data.extracted_text);
-          setExtractedText(data.extracted_text);
+
+          // Map OCR boxes to OpenCV boxes
+          const mappedResults = data.extracted_text.map((ocrResult) => {
+            const ocrBox = ocrResult.bounding_box.flat();
+            const matchingDetection = detections.find((detection) =>
+              isInside(ocrBox, detection.box)
+            );
+
+            return {
+              ...ocrResult,
+              matchingDetection: matchingDetection
+                ? {
+                    label: matchingDetection.label,
+                    confidence: matchingDetection.confidence,
+                  }
+                : null,
+            };
+          });
+          console.log(mappedResults);
+
+          setExtractedText(mappedResults);
         } catch (error) {
           console.error("Error during OCR:", error);
         }
       }
     }
-  }, [webcamRef]);
+  }, [webcamRef, detections]);
+
+  // Check if the given ocr box is inside the given cv box
+  const isInside = (ocrBox, cvBox) => {
+    const [x1, y1, x2, y2] = ocrBox;
+    const { x, y, w, h } = cvBox;
+    return x1 >= x && y1 >= y && x2 <= x + w && y2 <= y + h;
+  };
 
   useEffect(() => {
-    const captureInterval = setInterval(captureImage, 200);
-    const ocrInterval = setInterval(captureText, 5000);
+    const captureInterval = setInterval(captureImage, 500);
+    const ocrInterval = setInterval(captureText, 500);
 
     // Cleanup function
     return () => {
@@ -175,6 +203,25 @@ export default function ProductScanner() {
                 height: `${detection.box.h}px`,
               }}
             />
+          </div>
+        ))}
+        {extractedText.map((result, index) => (
+          <div key={`ocr-${index}`}>
+            <div
+              className="absolute bg-blue-500 text-white px-2 py-1 text-sm rounded-md z-40"
+              style={{
+                left: `${result.bounding_box[0][0]}px`,
+                top: `${result.bounding_box[0][1]}px`,
+              }}
+            >
+              {result.text}
+              {result.matchingDetection && (
+                <span className="ml-2">
+                  ({result.matchingDetection.label}:{" "}
+                  {(result.matchingDetection.confidence * 100).toFixed(0)}%)
+                </span>
+              )}
+            </div>
           </div>
         ))}
         <Webcam
