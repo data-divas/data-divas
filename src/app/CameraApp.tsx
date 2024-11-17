@@ -1,5 +1,4 @@
 "use client";
-"use client";
 
 import React, { useRef, useState, useEffect } from "react";
 import Webcam from "react-webcam";
@@ -11,7 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Loader2, Scan } from "lucide-react";
+import { Loader2, Scan, User } from "lucide-react";
 import Link from "next/link";
 
 export default function ProductScanner() {
@@ -31,32 +30,32 @@ export default function ProductScanner() {
   const [aspectRatio, setAspectRatio] = useState(0);
   const [extractedText, setExtractedText] = useState([]);
 
-  useEffect(() => {
-    function handleResize() {
-      // Get the viewport dimensions
-      const vw = Math.max(
-        document.documentElement.clientWidth || 0,
-        window.innerWidth || 0
-      );
-      const vh = Math.max(
-        document.documentElement.clientHeight || 0,
-        window.innerHeight || 0
-      );
+  // useEffect(() => {
+  //   function handleResize() {
+  //     // Get the viewport dimensions
+  //     const vw = Math.max(
+  //       document.documentElement.clientWidth || 0,
+  //       window.innerWidth || 0
+  //     );
+  //     const vh = Math.max(
+  //       document.documentElement.clientHeight || 0,
+  //       window.innerHeight || 0
+  //     );
 
-      // Calculate aspect ratio (always use landscape orientation)
-      const ratio = Math.max(vw, vh) / Math.min(vw, vh);
+  //     // Calculate aspect ratio (always use landscape orientation)
+  //     const ratio = Math.max(vw, vh) / Math.min(vw, vh);
 
-      setAspectRatio(ratio);
-      setDimensions({
-        width: vw,
-        height: vh,
-      });
-    }
+  //     setAspectRatio(ratio);
+  //     setDimensions({
+  //       width: vw,
+  //       height: vh,
+  //     });
+  //   }
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  //   handleResize();
+  //   window.addEventListener("resize", handleResize);
+  //   return () => window.removeEventListener("resize", handleResize);
+  // }, []);
 
   const videoConstraints = {
     width: { ideal: 1920 },
@@ -153,8 +152,10 @@ export default function ProductScanner() {
     <div className="flex flex-col h-[100vh] bg-gray-100 z-10">
       <header className="h-[10vh] flex items-center justify-center bg-white shadow-sm">
         <h1 className="text-2xl text-center absolute font-bold">Product Scanner</h1>
-        <Button className="ml-auto px-10 mr-10">
-          <Link href="/points">Spend Points</Link>
+        <Button className="ml-auto px-4 mr-10 py-2">
+          <Link href="/profile">
+          <User/>
+          </Link>
         </Button>
       </header>
       <main className="flex-grow relative w-[100vw] h-[90vh] flex items-center justify-center">
