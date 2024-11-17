@@ -35,6 +35,7 @@ export default function ProductScanner() {
   const [extractedText, setExtractedText] = useState([])
   const [carbonFootprint, setCarbonFootprint] = useState<number | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [extractedProductString, setExtractedProductString] = useState([])
 
   useEffect(() => {
     function handleResize() {
@@ -83,9 +84,14 @@ export default function ProductScanner() {
         await new Promise(resolve => setTimeout(resolve, steps[i].duration))
       } else {
         try {
-          //const response = await fetch('https://api.example.com/carbon-footprint')
-          //const data = await response.json()
-          //setCarbonFootprint(data.carbonFootprint)
+          const paragraph = extractedText
+            .map((item) => item.text)
+            .join("\n");
+
+          const product = await getProductAndWeight(paragraph);
+          setExtractedProductString(product);
+          
+          console.log("Product:", product);
           setIsModalOpen(true)
         } catch (error) {
           console.error('Error fetching carbon footprint:', error)
@@ -157,12 +163,6 @@ export default function ProductScanner() {
           const data = await response.json();
           console.log("extracted text", data.extracted_text);
 
-          const paragraph = data.extracted_text
-            .map((item) => item.text)
-            .join("\n");
-          const product = getProductAndWeight(paragraph);
-          console.log("Product:", product);
-
           const mappedResults = data.extracted_text.map((ocrResult) => {
             const ocrBox = ocrResult.bounding_box.flat()
             const matchingDetection = detections.find((detection) =>
@@ -179,7 +179,7 @@ export default function ProductScanner() {
                 : null,
             }
           })
-          console.log(mappedResults)
+          console.log("mappedresult", mappedResults)
 
           setExtractedText(mappedResults)
         } catch (error) {
