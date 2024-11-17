@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Progress } from "@/components/ui/progress"
-import ItemCard from '../components/ItemCard';
+import ItemCard from '../../components/ItemCard';
 import Chart from "../../components/Chart";
 import { useState } from 'react';
 
